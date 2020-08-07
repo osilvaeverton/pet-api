@@ -1,4 +1,4 @@
-package com.petz.api.entity;
+package com.petz.api.model;
 
 import javax.persistence.*;
 
@@ -12,6 +12,6 @@ public class Pet {
     private String nome;
 
     @ManyToOne
-    private Cliente dono;
+    private Client dono;
 
 }

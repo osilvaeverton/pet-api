@@ -1,0 +1,8 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    url: jdbc:postgresql://34.69.243.2:5432/postgres
+    username: postgres
+    password: petz

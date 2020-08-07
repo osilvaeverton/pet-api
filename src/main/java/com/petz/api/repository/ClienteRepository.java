@@ -1,7 +1,11 @@
 package com.petz.api.repository;
 
-import com.petz.api.entity.Cliente;
+import com.petz.api.model.Client;
 import org.springframework.data.repository.CrudRepository;
 
-public interface ClienteRepository extends CrudRepository<Cliente, Long> {
+import java.util.List;
+
+public interface ClienteRepository extends CrudRepository<Client, Long> {
+
+    List<Client> findAll();
 }
