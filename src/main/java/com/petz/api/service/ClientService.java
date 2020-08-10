@@ -4,8 +4,8 @@ import com.petz.api.model.Client;
 import com.petz.api.repository.ClientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ClientService {
@@ -17,8 +17,8 @@ public class ClientService {
         return clientRepository.findAll();
     }
 
-    public Client findById(Long clientId){
-        return clientRepository.findById(clientId).get();
+    public Optional<Client> findById(Long clientId){
+        return clientRepository.findById(clientId);
     }
 
     public Client save(Client client){
@@ -28,6 +28,5 @@ public class ClientService {
     public void remove(Long clientId){
         clientRepository.deleteById(clientId);
     }
-
 
 }

@@ -6,3 +6,7 @@ spring:
     url: jdbc:postgresql://34.69.243.2:5432/postgres
     username: postgres
     password: petz
+
+auth0:
+  issuer: https://dev-wvzz7oxf.us.auth0.com/
+  apiAudience: https://clients.petz.api.com/

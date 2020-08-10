@@ -1,4 +1,4 @@
-package com.petz.api.model.dto.client;
+package com.petz.api.controller.dto.client;
 
 import javax.validation.constraints.NotNull;
 
@@ -15,10 +15,6 @@ import java.time.LocalDateTime;
 @Setter
 @Builder
 public class ClientUpdateDTO {
-
-    @Id
-    @NotNull
-    private Long id;
 
     private String firstName;
 

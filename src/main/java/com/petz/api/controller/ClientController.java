@@ -1,76 +1,104 @@
 package com.petz.api.controller;
 
-import com.petz.api.model.dto.client.ClientCreationDTO;
+import com.petz.api.controller.dto.client.ClientCreationDTO;
+import com.petz.api.controller.dto.client.ClientDTO;
+import com.petz.api.controller.dto.client.ClientUpdateDTO;
+import com.petz.api.exception.client.ClientNotFoundException;
+import com.petz.api.model.Client;
+import com.petz.api.service.ClientService;
+import org.modelmapper.Conditions;
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.Collections;
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController("/clients")
 public class ClientController {
 
+    @Autowired
+    private ClientService clientService;
+
+    @Autowired
+    ModelMapper modelMapper;
+
     @GetMapping
-    public CollectionModel<ClientCreationDTO> findAll(){
-        ClientCreationDTO clientCreationDTO = ClientCreationDTO.builder()
-                .firstName("Everton")
-                .lastName("Silva")
-                .email("everton_ere93@hotmail.com")
-                .telefone("11998241145")
-                .birthDate(LocalDate.of(1993, Month.AUGUST, 25))
-                .cpf("40666833800")
-                .build();
+    public CollectionModel<ClientDTO> list(){
 
-        Set<ClientCreationDTO> clientCreationDTOS = Collections.singleton(clientCreationDTO);
-        CollectionModel<ClientCreationDTO> clientDTOEntityModel = CollectionModel.of(clientCreationDTOS);
+        List<Client> clients = clientService.findAll();
+        List<ClientDTO> clientDTOList = clients
+                .stream()
+                .map(client -> modelMapper.map(client, ClientDTO.class))
+                .collect(Collectors.toList());
 
-        return clientDTOEntityModel;
+        return CollectionModel.of(clientDTOList);
     }
 
-    @GetMapping("/{clienteId}")
-    public EntityModel<ClientCreationDTO> findOne(@PathVariable("clienteId") Long clienteId){
-        ClientCreationDTO clientCreationDTO = ClientCreationDTO.builder()
-                .firstName("Everton")
-                .lastName("Silva")
-                .email("everton_ere93@hotmail.com")
-                .telefone("11998241145")
-                .birthDate(LocalDate.of(1993, Month.AUGUST, 25))
-                .cpf("40666833800")
-                .build();
+    @GetMapping("/{clientId}")
+    public EntityModel<ClientDTO> findOne(@PathVariable("clientId") Long clientId){
 
-        EntityModel<ClientCreationDTO> clientDTOEntityModel = EntityModel.of(clientCreationDTO);
+        Client client = clientService.findById(clientId)
+                .orElseThrow(() -> new ClientNotFoundException(clientId));
 
-        return clientDTOEntityModel;
+        ClientDTO clientDTO = modelMapper.map(client, ClientDTO.class);
+
+        return EntityModel.of(clientDTO);
     }
 
     @PostMapping
-    public EntityModel<ClientCreationDTO> create(@RequestBody ClientCreationDTO clientCreationDTO){
-        EntityModel<ClientCreationDTO> clientDTOEntityModel = EntityModel.of(clientCreationDTO);
+    public EntityModel<ClientDTO> create(@RequestBody ClientCreationDTO clientCreationDTO){
 
-        return clientDTOEntityModel;
+        Client client = modelMapper.map(clientCreationDTO, Client.class);
+        Client savedClient = clientService.save(client);
+        ClientDTO clientDTO = modelMapper.map(savedClient, ClientDTO.class);
+
+        return EntityModel.of(clientDTO);
     }
 
-    @PutMapping("/{clienteId}")
-    public EntityModel<ClientCreationDTO> replace(@RequestBody ClientCreationDTO clientCreationDTO, @PathVariable("clienteId") Long clienteId){
-        EntityModel<ClientCreationDTO> clientDTOEntityModel = EntityModel.of(clientCreationDTO);
+    @PutMapping("/{clientId}")
+    public EntityModel<ClientDTO> replace(@RequestBody ClientUpdateDTO clientUpdateDTO, @PathVariable("clientId") Long clientId){
 
-        return clientDTOEntityModel;
+        ClientDTO clientDTO;
+        Client client = modelMapper.map(clientUpdateDTO, Client.class);
+        if(clientService.findById(clientId).isPresent()){
+            client.setId(clientId);
+            Client savedClient = clientService.save(client);
+            clientDTO = modelMapper.map(savedClient, ClientDTO.class);
+        } else {
+            Client savedClient = clientService.save(client);
+            clientDTO = modelMapper.map(savedClient, ClientDTO.class);
+        }
+
+        return EntityModel.of(clientDTO);
     }
 
-    @PatchMapping("/{clienteId}")
-    public EntityModel<ClientCreationDTO> update(@RequestBody ClientCreationDTO clientCreationDTO, @PathVariable("clienteId") Long clienteId){
-        EntityModel<ClientCreationDTO> clientDTOEntityModel = EntityModel.of(clientCreationDTO);
+    @PatchMapping("/{clientId}")
+    public EntityModel<ClientDTO> update(@RequestBody ClientUpdateDTO clientUpdateDTO, @PathVariable("clientId") Long clientId){
 
-        return clientDTOEntityModel;
+        Client client = clientService.findById(clientId)
+                .orElseThrow(() -> new ClientNotFoundException(clientId));
+
+        modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
+        modelMapper.map(clientUpdateDTO, client);
+        Client savedClient = clientService.save(client);
+        ClientDTO clientDTO = modelMapper.map(savedClient, ClientDTO.class);
+
+        return EntityModel.of(clientDTO);
     }
 
-    @DeleteMapping("/{clienteId}")
-    public ResponseEntity delete(@PathVariable("clienteId") Long clienteId){
-        return null;
+    @DeleteMapping("/{clientId}")
+    public ResponseEntity remove(@PathVariable("clientId") Long clientId){
+        Client client = clientService.findById(clientId)
+                .orElseThrow(() -> new ClientNotFoundException(clientId));
+
+        clientService.remove(clientId);
+
+        return new ResponseEntity<ClientDTO>(HttpStatus.OK);
     }
 
 }
