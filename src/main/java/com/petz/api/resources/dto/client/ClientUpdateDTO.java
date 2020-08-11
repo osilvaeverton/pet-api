@@ -1,16 +1,13 @@
-package com.petz.api.controller.dto.client;
-
-import javax.validation.constraints.NotNull;
+package com.petz.api.resources.dto.client;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-import javax.persistence.Id;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @Builder

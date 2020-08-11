@@ -1,11 +1,13 @@
-package com.petz.api.controller;
+package com.petz.api.resources;
 
-import com.petz.api.controller.dto.pet.PetCreationDTO;
-import com.petz.api.controller.dto.pet.PetDTO;
-import com.petz.api.controller.dto.pet.PetUpdateDTO;
+import com.petz.api.exception.client.ClientNotFoundException;
+import com.petz.api.repository.ClientRepository;
+import com.petz.api.repository.PetRepository;
+import com.petz.api.resources.dto.pet.PetCreationDTO;
+import com.petz.api.resources.dto.pet.PetDTO;
+import com.petz.api.resources.dto.pet.PetUpdateDTO;
 import com.petz.api.exception.pet.PetNotFoundException;
 import com.petz.api.model.Pet;
-import com.petz.api.service.PetService;
 import org.modelmapper.Conditions;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,13 +18,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-@RestController("/pets")
-public class PetController {
+@RestController
+@RequestMapping(value = "/pets")
+public class PetResource {
 
     @Autowired
-    private PetService petService;
+    private PetRepository petRepository;
+
+    @Autowired
+    private ClientRepository clientRepository;
 
     @Autowired
     ModelMapper modelMapper;
@@ -30,7 +37,7 @@ public class PetController {
     @GetMapping
     public CollectionModel<PetDTO> list(){
 
-        List<Pet> pets = petService.findAll();
+        List<Pet> pets = petRepository.findAll();
         List<PetDTO> petDTOList = pets
                 .stream()
                 .map(pet -> modelMapper.map(pet, PetDTO.class))
@@ -42,7 +49,7 @@ public class PetController {
     @GetMapping("/{petId}")
     public EntityModel<PetDTO> findOne(@PathVariable("petId") Long petId){
 
-        Pet pet = petService.findById(petId)
+        Pet pet = petRepository.findById(petId)
                 .orElseThrow(() -> new PetNotFoundException(petId));
 
         PetDTO petDTO = modelMapper.map(pet, PetDTO.class);
@@ -54,7 +61,11 @@ public class PetController {
     public EntityModel<PetDTO> create(@RequestBody PetCreationDTO petCreationDTO){
 
         Pet pet = modelMapper.map(petCreationDTO, Pet.class);
-        Pet savedPet = petService.save(pet);
+
+        clientRepository.findById(pet.getClient().getId())
+                .orElseThrow(() -> new ClientNotFoundException(pet.getClient().getId()));
+
+        Pet savedPet = petRepository.save(pet);
         PetDTO petDTO = modelMapper.map(savedPet, PetDTO.class);
 
         return EntityModel.of(petDTO);
@@ -65,12 +76,14 @@ public class PetController {
 
         PetDTO petDTO;
         Pet pet = modelMapper.map(petUpdateDTO, Pet.class);
-        if(petService.findById(petId).isPresent()){
+        Optional<Pet> persistedPet = petRepository.findById(petId);
+        if(persistedPet.isPresent()){
             pet.setId(petId);
-            Pet savedPet = petService.save(pet);
+            Pet savedPet = petRepository.save(pet);
+            savedPet.setCreatedAt(persistedPet.get().getCreatedAt());
             petDTO = modelMapper.map(savedPet, PetDTO.class);
         } else {
-            Pet savedPet = petService.save(pet);
+            Pet savedPet = petRepository.save(pet);
             petDTO = modelMapper.map(savedPet, PetDTO.class);
         }
 
@@ -80,12 +93,12 @@ public class PetController {
     @PatchMapping("/{petId}")
     public EntityModel<PetDTO> update(@RequestBody PetUpdateDTO petUpdateDTO, @PathVariable("petId") Long petId){
 
-        Pet pet = petService.findById(petId)
+        Pet pet = petRepository.findById(petId)
                 .orElseThrow(() -> new PetNotFoundException(petId));
 
         modelMapper.getConfiguration().setPropertyCondition(Conditions.isNotNull());
         modelMapper.map(petUpdateDTO, pet);
-        Pet savedPet = petService.save(pet);
+        Pet savedPet = petRepository.save(pet);
         PetDTO petDTO = modelMapper.map(savedPet, PetDTO.class);
 
         return EntityModel.of(petDTO);
@@ -93,10 +106,10 @@ public class PetController {
 
     @DeleteMapping("/{petId}")
     public ResponseEntity remove(@PathVariable("petId") Long petId){
-        Pet pet = petService.findById(petId)
+        petRepository.findById(petId)
                 .orElseThrow(() -> new PetNotFoundException(petId));
 
-        petService.remove(petId);
+        petRepository.deleteById(petId);
 
         return new ResponseEntity<PetDTO>(HttpStatus.OK);
     }

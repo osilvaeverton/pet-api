@@ -1,25 +1,21 @@
-package com.petz.api.controller.dto.client;
+package com.petz.api.resources.dto.client;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import lombok.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.format.annotation.DateTimeFormat;
 
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class ClientReplaceDTO {
-
-    @Id
-    @NotNull
-    private Long id;
+@Builder
+public class ClientCreationDTO {
 
     @NotNull
     private String firstName;
@@ -28,6 +24,7 @@ public class ClientReplaceDTO {
     private String lastName;
 
     @NotNull
+    @JsonFormat(pattern = "dd/MM/yyyy")
     private LocalDate birthDate;
 
     @NotNull
@@ -38,6 +35,9 @@ public class ClientReplaceDTO {
 
     @NotNull
     private String email;
+
+    @JsonIgnore
+    private final LocalDateTime createdAt = LocalDateTime.now();
 
     @JsonIgnore
     private final LocalDateTime editedAt = LocalDateTime.now();

@@ -1,10 +1,10 @@
-package com.petz.api.controller.dto.client;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+package com.petz.api.resources.dto.client;
+import lombok.*;
 
 import java.time.LocalDate;
 
+@NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @Setter
 @Builder

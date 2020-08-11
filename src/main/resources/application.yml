@@ -7,6 +7,9 @@ spring:
     username: postgres
     password: petz
 
-auth0:
-  issuer: https://dev-wvzz7oxf.us.auth0.com/
-  apiAudience: https://clients.petz.api.com/
+security:
+  oauth2:
+    client:
+      scope: password
+      client-id: petz-client
+      client-secret: 123

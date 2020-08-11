@@ -1,4 +1,4 @@
-package com.petz.api.controller.advice.client;
+package com.petz.api.resources.advice.client;
 
 import com.petz.api.exception.client.ClientNotFoundException;
 import org.springframework.http.HttpStatus;

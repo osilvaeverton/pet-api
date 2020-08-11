@@ -1,4 +1,4 @@
-package com.petz.api.controller.advice.pet;
+package com.petz.api.resources.advice.pet;
 
 import com.petz.api.exception.pet.PetNotFoundException;
 import org.springframework.http.HttpStatus;
