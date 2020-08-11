@@ -11,6 +11,6 @@ public class PetDTO {
 
     private Long id;
     private String nome;
-    private String clientId;
+    private Long clientId;
 
 }

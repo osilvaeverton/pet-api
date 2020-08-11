@@ -17,7 +17,7 @@ public class PetReplaceDTO {
     private String nome;
 
     @NotNull
-    private Long client_id;
+    private Long clientId;
 
     @JsonIgnore
     private final LocalDateTime editedAt = LocalDateTime.now();

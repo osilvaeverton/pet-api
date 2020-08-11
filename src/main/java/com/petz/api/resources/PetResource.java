@@ -1,6 +1,7 @@
 package com.petz.api.resources;
 
 import com.petz.api.exception.client.ClientNotFoundException;
+import com.petz.api.model.Client;
 import com.petz.api.repository.ClientRepository;
 import com.petz.api.repository.PetRepository;
 import com.petz.api.resources.dto.pet.PetCreationDTO;
@@ -62,8 +63,10 @@ public class PetResource {
 
         Pet pet = modelMapper.map(petCreationDTO, Pet.class);
 
-        clientRepository.findById(pet.getClient().getId())
+        Client client = clientRepository.findById(pet.getClient().getId())
                 .orElseThrow(() -> new ClientNotFoundException(pet.getClient().getId()));
+
+        pet.setClient(client);
 
         Pet savedPet = petRepository.save(pet);
         PetDTO petDTO = modelMapper.map(savedPet, PetDTO.class);

@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class PetUpdateDTO {
 
     private String nome;
-    private Long client_id;
+    private Long clientId;
 
     @JsonIgnore
     private final LocalDateTime editedAt = LocalDateTime.now();

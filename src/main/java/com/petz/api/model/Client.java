@@ -1,15 +1,13 @@
 package com.petz.api.model;
 
+import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 
 import lombok.*;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,7 +18,7 @@ import java.time.LocalDateTime;
 public class Client {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @NotNull
@@ -28,6 +26,9 @@ public class Client {
 
     @NotNull
     private String lastName;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "client")
+    private List<Pet> pets;
 
     @NotNull
     private LocalDate birthDate;
