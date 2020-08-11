@@ -12,9 +12,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -31,15 +33,24 @@ public class ClientResource {
     ModelMapper modelMapper;
 
     @GetMapping
-    public CollectionModel<ClientDTO> list(){
+    public CollectionModel<EntityModel<ClientDTO>> list(){
 
         List<Client> clientEntities = clientRepository.findAll();
-        List<ClientDTO> clients = clientEntities
+        List<EntityModel<ClientDTO>> clients = clientEntities
                 .stream()
                 .map(client -> modelMapper.map(client, ClientDTO.class))
+                .map(clientDTO -> {
+                    EntityModel<ClientDTO> clientDTOEntityModel = EntityModel.of(clientDTO);
+                    clientDTOEntityModel.add(linkTo(methodOn(ClientResource.class).findOne(clientDTO.getId())).withSelfRel());
+                    return clientDTOEntityModel;
+                })
                 .collect(Collectors.toList());
 
-        return CollectionModel.of(clients);
+        CollectionModel<EntityModel<ClientDTO>> clientDTOColletionModel = CollectionModel.of(clients);
+        clientDTOColletionModel.add(linkTo(methodOn(ClientResource.class).list()).withSelfRel());
+        clientDTOColletionModel.add(linkTo(methodOn(PetResource.class).list()).withRel("pets"));
+
+        return clientDTOColletionModel;
     }
 
     @GetMapping("/{clientId}")
@@ -50,7 +61,10 @@ public class ClientResource {
 
         ClientDTO clientDTO = modelMapper.map(client, ClientDTO.class);
 
-        return EntityModel.of(clientDTO);
+        EntityModel<ClientDTO> clientDTOEntityModel = EntityModel.of(clientDTO);
+        clientDTOEntityModel.add(linkTo(ClientResource.class).withRel("clients"));
+
+        return clientDTOEntityModel;
     }
 
     @PostMapping
@@ -60,7 +74,11 @@ public class ClientResource {
         Client savedClient = clientRepository.save(client);
         ClientDTO clientDTO = modelMapper.map(savedClient, ClientDTO.class);
 
-        return EntityModel.of(clientDTO);
+        EntityModel<ClientDTO> clientDTOEntityModel = EntityModel.of(clientDTO);
+        clientDTOEntityModel.add(linkTo(ClientResource.class).withRel("clients"));
+        clientDTOEntityModel.add(linkTo(methodOn(ClientResource.class).findOne(clientDTO.getId())).withSelfRel());
+
+        return clientDTOEntityModel;
     }
 
     @PutMapping("/{clientId}")
@@ -79,7 +97,11 @@ public class ClientResource {
             clientDTO = modelMapper.map(savedClient, ClientDTO.class);
         }
 
-        return EntityModel.of(clientDTO);
+        EntityModel<ClientDTO> clientDTOEntityModel = EntityModel.of(clientDTO);
+        clientDTOEntityModel.add(linkTo(ClientResource.class).withRel("clients"));
+        clientDTOEntityModel.add(linkTo(methodOn(ClientResource.class).findOne(clientDTO.getId())).withSelfRel());
+
+        return clientDTOEntityModel;
     }
 
     @PatchMapping("/{clientId}")
@@ -93,7 +115,11 @@ public class ClientResource {
         Client savedClient = clientRepository.save(client);
         ClientDTO clientDTO = modelMapper.map(savedClient, ClientDTO.class);
 
-        return EntityModel.of(clientDTO);
+        EntityModel<ClientDTO> clientDTOEntityModel = EntityModel.of(clientDTO);
+        clientDTOEntityModel.add(linkTo(ClientResource.class).withRel("clients"));
+        clientDTOEntityModel.add(linkTo(methodOn(ClientResource.class).findOne(clientDTO.getId())).withSelfRel());
+
+        return clientDTOEntityModel;
     }
 
     @DeleteMapping("/{clientId}")
@@ -103,7 +129,7 @@ public class ClientResource {
 
         clientRepository.deleteById(clientId);
 
-        return new ResponseEntity<ClientDTO>(HttpStatus.OK);
+        return new ResponseEntity<ClientDTO>(HttpStatus.NO_CONTENT);
     }
 
 }
